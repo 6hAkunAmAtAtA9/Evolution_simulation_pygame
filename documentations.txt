@@ -1,0 +1,6 @@
+
+
+pygame.draw.rect(self.screen, self.settings.NAVY, (470, 470, 30, 30), 5) посмотреть разметку
+pygame.draw.rect(self.screen, self.settings.SPRING_GREEN, (480, 0, 20, 20), self.settings.line_thin)
+
+в ректе координаты сначалa  y потом x
