@@ -18,5 +18,5 @@ class Food(Enviroment):
         super().__init__()
         self.type = 'food'
         self.color = self.settings.LIME
-        self.object = pygame.Rect((self.y * self.height, self.x * self.width, self.width, self.height))
+        self.object = pygame.Rect((self.x * self.width, self.y * self.height, self.width, self.height))
         self.energy = 5

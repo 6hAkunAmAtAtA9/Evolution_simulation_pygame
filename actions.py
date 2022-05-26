@@ -1,16 +1,23 @@
 import random
 import pygame
 from settings import Settings
+from cell import Cell
 settings = Settings()
 
 
 def life_cicle(cell, cell_list):
     """Main circle of events in cells life"""
     location = nearby_objects(cell, cell_list)
-
+    birth(cell, cell_list, location)
     square_moving(cell, cell_list, location)
+    cell.action_possibility = False
+    cell.freedom_love += 1
+
+
+
+
+
     #print(location[0], location[1], location[2], sep='\n')
-    #print("**************")
     #print(nearby_objects(cell, cell_list))
 
 
@@ -68,23 +75,35 @@ def moving(cell):
 def square_moving(cell, cell_list, location):
     cell.moving_indicator = random.choice(('up', 'down', 'left', 'right'))
 
-    if cell.moving_indicator == 'up' and cell.y >= cell.height and location[0][1] == '0':
-        cell.y -= cell.height
+    if cell.moving_indicator == 'up' and location[0][1] == '0':
+        cell_list[cell.y - 1][cell.x] = cell
+        cell_list[cell.y][cell.x] = '0'
+        cell.y -= 1
         cell.energy -= 1
+        cell.freedom_love -= 2
 
-    if cell.moving_indicator == 'down' and cell.y <= settings.screen_height - 2 * cell.height and location[2][1] == '0':
-        cell.y += cell.height
+    if cell.moving_indicator == 'down' and location[2][1] == '0':
+        cell_list[cell.y + 1][cell.x] = cell
+        cell_list[cell.y][cell.x] = '0'
+        cell.y += 1
         cell.energy -= 1
+        cell.freedom_love -= 2
 
-    if cell.moving_indicator == 'right' and cell.x >= cell.width and location[1][0] == '0':
-        cell.x -= cell.width
+    if cell.moving_indicator == 'left' and location[1][0] == '0':
+        cell_list[cell.y][cell.x - 1] = cell
+        cell_list[cell.y][cell.x] = '0'
+        cell.x -= 1
         cell.energy -= 1
+        cell.freedom_love -= 2
 
-    if cell.moving_indicator == 'left' and cell.x <= settings.screen_width - 2 * cell.width and location[1][2] == '0':
-        cell.x += cell.width
+    if cell.moving_indicator == 'right' and location[1][2] == '0':
+        cell_list[cell.y][cell.x + 1] = cell
+        cell_list[cell.y][cell.x] = '0'
+        cell.x += 1
         cell.energy -= 1
+        cell.freedom_love -= 2
 
-    cell.object = pygame.Rect((cell.x, cell.y, cell.width, cell.height))
+    cell.object = pygame.Rect((cell.x * cell.width, cell.y * cell.height, cell.width, cell.height))
 
 def movement_possibility(cell, cell_list):
     for v in cell_list.values():
@@ -98,39 +117,56 @@ def nearby_objects(cell, cell_list):
     top = ['0', '0', '0']
     middle = ['0', 'C', '0']
     bottom = ['0', '0', '0']
-    for k, v in cell_list.items():
-        if cell == v:
-            continue
-        if v.x - cell.width <= cell.x <= v.x + cell.width:
-            if v.y - cell.height <= cell.y <= v.y + cell.height:
-                if v.x - cell.width == cell.x:
-                    if v.y + cell.height == cell.y:
-                        top[2] = [k, v.type[0]]
-                    elif v.y == cell.y:
-                        middle[2] = [k, v.type[0]]
-                    else:
-                        bottom[2] = [k, v.type[0]]
-                elif v.x == cell.x:
-                    if v.y + cell.height == cell.y:
-                        top[1] = [k, v.type[0]]
-                    else:
-                        bottom[1] = [k, v.type[0]]
-                else:
-                    if v.y + cell.height == cell.y:
-                        top[0] = [k, v.type[0]]
-                    elif v.y == cell.y:
-                        middle[0] = [k, v.type[0]]
-                    else:
-                        bottom[0] = [k, v.type[0]]
+
+    top[0] = try_to_see(cell_list, cell.y - 1, cell.x - 1)
+    top[1] = try_to_see(cell_list, cell.y - 1, cell.x)
+    top[2] = try_to_see(cell_list, cell.y - 1, cell.x + 1)
+    middle[0] = try_to_see(cell_list, cell.y, cell.x - 1)
+    middle[2] = try_to_see(cell_list, cell.y, cell.x + 1)
+    bottom[0] = try_to_see(cell_list, cell.y + 1, cell.x - 1)
+    bottom[1] = try_to_see(cell_list, cell.y + 1, cell.x)
+    bottom[2] = try_to_see(cell_list, cell.y + 1, cell.x + 1)
     return [top, middle, bottom]
 
-def killer(cell_list:dict):
-    kill_list = []
-    for k, v in cell_list.items():
-        if v.energy <= 0:
-            kill_list.append(k)
+def try_to_see(cell_list, oringinal_y, original_x):
+    a = '-'
+    if original_x < 0 or oringinal_y < 0:
+        return '-'
+    try:
+        a = cell_list[oringinal_y][original_x]
+    except IndexError:
+        a = '-'
+    return a
 
-    [cell_list.pop(key) for key in kill_list]
+
+def birth(cell, cell_list, location):
+    birth_probability = random.randint(1, 5)
+    if birth_probability >= 5 and len(cell_list) - 1 > cell.y > 1:
+        if cell_list[cell.y - 1][cell.x] == '0':
+            try:
+                cell_list[cell.y - 1][cell.x] = Cell(cell.y - 1, cell.x, cell.color)
+
+            except IndexError:
+                pass
+        elif cell_list[cell.y + 1][cell.x] == '0':
+            try:
+                cell_list[cell.y + 1][cell.x] = Cell(cell.y + 1, cell.x, cell.color)
+            except IndexError:
+                pass
+
+
+
+def killer(cell_list, death_count):
+    for i in range(len(cell_list)):
+        for j in range(len(cell_list[i])):
+            if cell_list[i][j] != '0':
+                if (cell_list[i][j].type == 'cell' and cell_list[i][j].freedom_love > 10) or cell_list[i][j].energy == 0:
+                    cell_list[i][j] = '0'
+                    death_count += 1
+    return death_count
+
+
+
 
 
 

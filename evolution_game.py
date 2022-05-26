@@ -7,6 +7,7 @@ from cell import Cell
 from environemt import Enviroment, Food
 import actions
 
+
 class Evolution_game:
 
     def __init__(self):
@@ -19,77 +20,65 @@ class Evolution_game:
                         for _ in range(int(self.settings.screen_height / self.settings.start_size))]
 
 
-        for i in range(self.settings.cells_start_count):
-            cell = Cell()
-            if self.objects[cell.x][cell.y] == '0':
-                self.objects[cell.x][cell.y] = cell
+        arr = []
+        for _ in range(self.settings.cells_start_count):
+            a = random.randint(0, len(self.objects))
+            b = random.randint(0, len(self.objects))
+            arr.append((a, b))
+        print(arr)
+
+
+        for i in range(len((self.objects))):
+            for j in range(len(self.objects[i])):
+                if (i, j) in arr and self.objects[i][j] == '0':
+                    color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+                    self.objects[i][j] = Cell(i,j, color)
 
         for i in range(self.settings.food_start_count):
             food = Food()
-            if self.objects[food.x][food.y] == '0':
-                self.objects[food.x][food.y] = food
-        #
-        # for i in range(self.settings.cells_start_count, self.settings.cells_start_count + self.settings.food_start_count):
-        #     env = Food()
-        #         self.objects[i] = env
-        #     if actions.movement_possibility(env, self.objects):
+            if self.objects[food.y][food.x] == '0':
+                self.objects[food.y][food.x] = food
 
         self.round_counter = 0
-        #print(self.objects)
-        #print(dir(self.objects[0]))
-        #print(self.objects[0].type)
+        self.death_count = 0
+        self.cell_count = 0
 
-        #for value in self.objects.values():
-            #print(f'{value.type} in {value.x}:{value.y}')
-
+        print('Y:', len(self.objects), 'X:', len(self.objects[0]))
 
     def run_game(self):
         while True:
             self.screen.fill(self.settings.bg_color)
+            actions.killer(self.objects, self.death_count)
 
 
             for i in range(len((self.objects))):
                 for j in range(len(self.objects[i])):
                     if self.objects[i][j] != '0':
-                        print(self.objects[i][j].x, self.objects[i][j].y)
-                        pygame.draw.rect(self.screen, self.objects[i][j].color, self.objects[i][j].object, self.objects[i][j].line_thin)
+                        if self.objects[i][j].type == 'cell' and self.objects[i][j].action_possibility == True:
+                            actions.life_cicle(self.objects[i][j], self.objects)
 
 
-            # actions.killer(self.objects)
-            # for key, value in self.objects.items():
-            #     if value.type == 'cell':
-            #         actions.life_cicle(value, self.objects)
-            #         pygame.draw.rect(self.screen, value.color, value.object, self.settings.line_thin)
-            #
-            #     if value.type == 'food':
-            #         pygame.draw.rect(self.screen, value.color, value.object, value.line_thin)
-
-            for i in range(len(self.objects)):
-                print(self.objects[i])
-
-
-
-            print("*" * len(self.objects))
-
-
+            for i in range(len((self.objects))):
+                for j in range(len(self.objects[i])):
+                    if self.objects[i][j] != '0':
+                        if self.objects[i][j].type == 'cell':
+                            self.objects[i][j].action_possibility = True
+                            self.cell_count += 1
+                            pygame.draw.rect(self.screen, self.objects[i][j].color, self.objects[i][j].object,
+                                             self.objects[i][j].line_thin)
+                        else:
+                            pygame.draw.rect(self.screen, self.objects[i][j].color, self.objects[i][j].object,
+                                             self.objects[i][j].line_thin)
 
             pygame.display.flip()
-
-            time.sleep(60)
-            self.round_counter += 1
-
+            time.sleep(0.1)
 
 
             for event in pygame.event.get():
-               if event.type == pygame.QUIT:
-                   sys.exit()
+                if event.type == pygame.QUIT:
+                    sys.exit()
 
 
 if __name__ == "__main__":
     eg = Evolution_game()
     eg.run_game()
-
-
-
-
-

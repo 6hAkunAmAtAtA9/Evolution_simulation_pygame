@@ -3,14 +3,14 @@ import random
 class Settings():
 
     def __init__(self):
-        self.cells_start_count = 3
-        self.food_start_count = 5
-        self.screen_width = 100
-        self.screen_height = 100
+        self.cells_start_count = 20
+        self.food_start_count = 0
+        self.screen_width = 1200
+        self.screen_height = 1000
         self.bg_color = (0, 0, 0)
-        self.line_thin = 5
-        self.start_size = 20   # начальный размер квадратов
-        self.start_energy = 30
+        self.line_thin = 1
+        self.start_size = 5  # начальный размер квадратов
+        self.start_energy = random.randint(1, 20)
 
         '''Colors'''
         self.LIGHT_BLUE = (173, 216, 230)
