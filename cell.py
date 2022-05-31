@@ -4,9 +4,8 @@ from settings import Settings
 
 class Cell():
 
-    def __init__(self, y, x, color):
+    def __init__(self, y, x, color, genome):
         self.type = 'cell'
-
         self.settings = Settings()
         self.width = self.settings.start_size
         self.height = self.settings.start_size
@@ -16,6 +15,7 @@ class Cell():
         self.energy = self.settings.start_energy
         self.action_possibility = False
         self.freedom_love = 0
+        self.genome = genome
 
 
         #self.color = random.choice(self.settings.colors)
