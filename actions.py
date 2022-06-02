@@ -13,7 +13,7 @@ def life_cicle(cell, cell_list):
     if killer(cell, cell_list, location):  # если ложь клетка умерла, смысла жить нет
         potention = get_activities(cell)
         # print('potention', potention)
-        if potention >= 90:
+        if potention >= 20:
             square_moving(cell, cell_list, location)
         if potention > 95:
             birth(cell, cell_list)
@@ -25,9 +25,10 @@ def life_cicle(cell, cell_list):
         cell.energy -= 1 + cell.genome["Желание_жить"] * 0.2
 
 def square_moving(cell, cell_list, location):
-    cell.moving_indicator = random.choice(('up', 'down', 'left', 'right')) # 2 down added  'down', 'right', 'left'
+    cell.moving_indicator = random.choice(('up', 'down', 'right', 'left')) # 2 down added  'down', 'right', 'left'
 
     if cell.moving_indicator == 'up' and location[0][1] == '0':
+
         if cell.y - 1 >= 0:
             cell_list[cell.y - 1][cell.x] = cell
             cell_list[cell.y][cell.x] = '0'
