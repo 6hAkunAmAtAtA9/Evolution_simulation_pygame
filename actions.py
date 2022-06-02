@@ -8,7 +8,7 @@ settings = Settings()
 
 def life_cicle(cell, cell_list):
     """Main circle of events in cells life"""
-    print(cell.x, cell.y, cell.genome)
+    #print(cell.x, cell.y, cell.genome)
     location = nearby_objects(cell, cell_list)
     if killer(cell, cell_list, location):  # если ложь клетка умерла, смысла жить нет
         potention = get_activities(cell)
@@ -18,14 +18,14 @@ def life_cicle(cell, cell_list):
         if potention > 95:
             birth(cell, cell_list)
 
-        if potention > 100:
-            mutation(cell)
+        # if potention > 100:
+        #     mutation(cell)
 
         cell.action_possibility = False
-        cell.energy -= 1 + cell.genome["Желание_жить"] * 0.3
+        cell.energy -= 1 + cell.genome["Желание_жить"] * 0.2
 
 def square_moving(cell, cell_list, location):
-    cell.moving_indicator = random.choice(('up', 'down', 'left', 'right', 'down', 'right', 'left'))  # 2 down added
+    cell.moving_indicator = random.choice(('up', 'down', 'left', 'right')) # 2 down added  'down', 'right', 'left'
 
     if cell.moving_indicator == 'up' and location[0][1] == '0':
         if cell.y - 1 >= 0:
@@ -105,12 +105,12 @@ def birth(cell, cell_list):
     if settings.y_size > cell.y > 0:
         if cell_list[cell.y - 1][cell.x] == '0':
             try:
-                cell_list[cell.y - 1][cell.x] = Cell(cell.y - 1, cell.x, cell.color, cell.genome)
+                cell_list[cell.y - 1][cell.x] = Cell(cell.y - 1, cell.x, cell.color, cell.genome, cell.kind)
             except IndexError:
                 pass
         elif cell_list[cell.y + 1][cell.x] == '0':
             try:
-                cell_list[cell.y + 1][cell.x] = Cell(cell.y + 1, cell.x, cell.color, cell.genome)
+                cell_list[cell.y + 1][cell.x] = Cell(cell.y + 1, cell.x, cell.color, cell.genome, cell.kind)
             except IndexError:
                 pass
 
@@ -132,13 +132,7 @@ def get_activities(cell):
 
 
 def mutation(cell):
-    if cell.genome['Желание_жить'] < 50:
+    if cell.genome_count < 50:
         cell.genome['Желание_жить'] = round(cell.genome['Желание_жить'] + 0.1, 1)
-        if 255 > cell.color[0] > 0:
-            cell.color[0] -= 1
-        elif 255 > cell.color[0] > 0:
-            cell.color[1] -= 1
-        elif 255 > cell.color[0] > 0:
-            cell.color[2] -= 1
-        else:
-            pass
+    else:
+        pass
