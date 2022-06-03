@@ -46,7 +46,7 @@ class Evolution_game:
 
 
 
-            '''Прохож основного цикла жизни с переработкой массива  координат клеток'''
+            '''Проход основного цикла жизни с переработкой массива  координат клеток'''
             for i in range(len((self.objects))):
                 for j in range(len(self.objects[i])):
                     if self.objects[i][j] != '0':
@@ -74,7 +74,7 @@ class Evolution_game:
 
 
             pygame.display.flip()
-            time.sleep(0.01)
+            time.sleep(0.1)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -83,8 +83,9 @@ class Evolution_game:
             '''Выводим в консоль количество клеток каждого вида'''
             sorted_tuples = sorted(self.kinds_uniq.items(), key=lambda item: item[1], reverse=True)
             sorted_dict = {k: v for k, v in sorted_tuples}
-            # print(sorted_dict)
+            print(sorted_dict)
             # print('ROUND')
+            # print(self.cell_count)
 
     def birth(self):
         a = random.randint(0, len(self.objects) - 1)
@@ -92,10 +93,20 @@ class Evolution_game:
         kind = self.kinds.pop(0)
         if self.objects[a][b] == '0':
             try:
-                self.objects[a][b] = Cell(a, b, random.choice(self.settings.colors), {'Желание_жить': 1}, kind)
+                self.objects[a][b] = Cell(a, b, random.choice(self.settings.colors), self.genome(), kind)
             except IndexError:
                 pass
 
+
+    def genome(self):
+        a = []
+        # while len(a) < 10:
+        #     a.append(random.choice(("up", 'down', 'right', 'left')))
+        a.append('birth')
+        while len(a) < 25:
+            a.append('none')
+        random.shuffle(a)
+        return a
 
 if __name__ == "__main__":
     eg = Evolution_game()

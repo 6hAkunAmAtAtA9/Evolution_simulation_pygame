@@ -11,23 +11,31 @@ def life_cicle(cell, cell_list):
     #print(cell.x, cell.y, cell.genome)
     location = nearby_objects(cell, cell_list)
     if killer(cell, cell_list, location):  # если ложь клетка умерла, смысла жить нет
-        potention = get_activities(cell)
-        # print('potention', potention)
-        if potention >= 20:
-            square_moving(cell, cell_list, location)
-        if potention > 95:
-            birth(cell, cell_list)
 
-        # if potention > 100:
-        #     mutation(cell)
+
+        action, cell.genome = genome_action(cell.genome)
+
+        if action in ('up', 'down', 'right', 'left'):
+            square_moving(cell, cell_list, location, action)
+        if action == 'birth':
+            birth(cell, cell_list)
+        if action == 'collect':
+            cell.energy += 1
+
+        mut = random.randint(1,100)
+        if mut == 100:
+
+            cell.genome = mutation_new(cell.genome)
+
+
 
         cell.action_possibility = False
-        cell.energy -= 1 + cell.genome["Желание_жить"] * 0.2
+        cell.energy -= 1
 
-def square_moving(cell, cell_list, location):
-    cell.moving_indicator = random.choice(('up', 'down', 'right', 'left')) # 2 down added  'down', 'right', 'left'
+def square_moving(cell, cell_list, location, action):
 
-    if cell.moving_indicator == 'up' and location[0][1] == '0':
+
+    if action == 'up' and location[0][1] == '0':
 
         if cell.y - 1 >= 0:
             cell_list[cell.y - 1][cell.x] = cell
@@ -38,7 +46,7 @@ def square_moving(cell, cell_list, location):
             cell_list[cell.y][cell.x] = '0'
             cell.y = settings.y_size
 
-    if cell.moving_indicator == 'down' and location[2][1] == '0':
+    if action == 'down' and location[2][1] == '0':
         try:
             cell_list[cell.y + 1][cell.x] = cell
             cell_list[cell.y][cell.x] = '0'
@@ -48,7 +56,7 @@ def square_moving(cell, cell_list, location):
             cell_list[cell.y][cell.x] = '0'
             cell.y = 0
 
-    if cell.moving_indicator == 'left' and location[1][0] == '0':
+    if action == 'left' and location[1][0] == '0':
         if cell.x - 1 >= 0:
             cell_list[cell.y][cell.x - 1] = cell
             cell_list[cell.y][cell.x] = '0'
@@ -58,7 +66,7 @@ def square_moving(cell, cell_list, location):
             cell_list[cell.y][cell.x] = '0'
             cell.x = settings.x_size
 
-    if cell.moving_indicator == 'right' and location[1][2] == '0':
+    if action == 'right' and location[1][2] == '0':
         try:
             cell_list[cell.y][cell.x + 1] = cell
             cell_list[cell.y][cell.x] = '0'
@@ -104,6 +112,7 @@ def try_to_see(cell_list, oringinal_y, original_x):
 
 def birth(cell, cell_list):
     if settings.y_size > cell.y > 0:
+        random.shuffle(cell.genome)
         if cell_list[cell.y - 1][cell.x] == '0':
             try:
                 cell_list[cell.y - 1][cell.x] = Cell(cell.y - 1, cell.x, cell.color, cell.genome, cell.kind)
@@ -131,9 +140,20 @@ def get_activities(cell):
 
     return potention
 
+def genome_action(genome):
+    action = genome.pop(0)
+    genome.append(action)
+    return action, genome
+
 
 def mutation(cell):
     if cell.genome_count < 50:
         cell.genome['Желание_жить'] = round(cell.genome['Желание_жить'] + 0.1, 1)
     else:
         pass
+
+def mutation_new(genome):
+    new_gen = random.choice(('up', 'down', 'left', 'right', 'birth', 'none', 'collect'))
+    genome.pop(random.randint(0, len(genome) - 1))
+    genome.append(new_gen)
+    return genome

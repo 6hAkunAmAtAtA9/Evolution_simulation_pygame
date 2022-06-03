@@ -16,8 +16,8 @@ class Cell():
         self.action_possibility = False
         self.freedom_love = 0
         self.genome = genome
-        self.genome_count = 1
         self.kind = kind
+        self.genome_runner = random.randint(0, 63)
 
 
         #self.color = random.choice(self.settings.colors)
