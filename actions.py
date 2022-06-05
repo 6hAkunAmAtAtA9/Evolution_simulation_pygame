@@ -6,36 +6,40 @@ from cell import Cell
 settings = Settings()
 
 
-def life_cicle(cell, cell_list):
+def life_cicle(cell, cell_list, b_k, m_k, d_k):
     """Main circle of events in cells life"""
-    #print(cell.x, cell.y, cell.genome)
+    # print(cell.x, cell.y, cell.genome)
+
     location = nearby_objects(cell, cell_list)
-    if killer(cell, cell_list, location):  # если ложь клетка умерла, смысла жить нет
+    action = genome_action(cell.genome)
+    # print(cell.x, cell.y)
+    # print(location[0])
+    # print(location[1])
+    # print(location[2])
 
 
-        action, cell.genome = genome_action(cell.genome)
+    if action in ('u', 'd', 'r', 'l'):
+        square_moving(cell, cell_list, location, action)
+    if 'b' in action and cell.energy > int(action[-2:]):
+        birth(cell, cell_list, action, m_k)
+        cell.energy -= int(action[-2:])
 
-        if action in ('up', 'down', 'right', 'left'):
-            square_moving(cell, cell_list, location, action)
-        if action == 'birth':
-            birth(cell, cell_list)
-        if action == 'collect':
-            cell.energy += 1
+    if action == 'c':
+        cell.energy += 10
 
-        mut = random.randint(1,100)
-        if mut == 100:
+    if "e" in action:
+        eat(cell, location, cell_list, action)
+        cell.energy -= 10
 
-            cell.genome = mutation_new(cell.genome)
+    cell.action_possibility = False
+    cell.energy -= 1
+
+    killer(cell, cell_list, location, d_k)
 
 
-
-        cell.action_possibility = False
-        cell.energy -= 1
 
 def square_moving(cell, cell_list, location, action):
-
-
-    if action == 'up' and location[0][1] == '0':
+    if action == 'u' and location[0][1] == '0':
 
         if cell.y - 1 >= 0:
             cell_list[cell.y - 1][cell.x] = cell
@@ -46,7 +50,7 @@ def square_moving(cell, cell_list, location, action):
             cell_list[cell.y][cell.x] = '0'
             cell.y = settings.y_size
 
-    if action == 'down' and location[2][1] == '0':
+    if action == 'd' and location[2][1] == '0':
         try:
             cell_list[cell.y + 1][cell.x] = cell
             cell_list[cell.y][cell.x] = '0'
@@ -56,7 +60,7 @@ def square_moving(cell, cell_list, location, action):
             cell_list[cell.y][cell.x] = '0'
             cell.y = 0
 
-    if action == 'left' and location[1][0] == '0':
+    if action == 'l' and location[1][0] == '0':
         if cell.x - 1 >= 0:
             cell_list[cell.y][cell.x - 1] = cell
             cell_list[cell.y][cell.x] = '0'
@@ -66,7 +70,7 @@ def square_moving(cell, cell_list, location, action):
             cell_list[cell.y][cell.x] = '0'
             cell.x = settings.x_size
 
-    if action == 'right' and location[1][2] == '0':
+    if action == 'r' and location[1][2] == '0':
         try:
             cell_list[cell.y][cell.x + 1] = cell
             cell_list[cell.y][cell.x] = '0'
@@ -110,50 +114,68 @@ def try_to_see(cell_list, oringinal_y, original_x):
     return a
 
 
-def birth(cell, cell_list):
-    if settings.y_size > cell.y > 0:
-        random.shuffle(cell.genome)
+def birth(cell, cell_list, action, m_k):
+    if settings.y_size >= cell.y > 0:
+        new_genome = cell.genome.copy()
+        random.shuffle(new_genome)
+
+        cell_n = Cell(cell.y - 1, cell.x, cell.color, new_genome, cell.kind, action[-2:])
+
+        if random.randint(1, 50) == 50:
+            genome, kind = mutation(cell.genome, cell.kind)
+            cell_n = Cell(cell.y - 1, cell.x, random.choice(settings.colors), genome, kind, action[-2:])
+
+
         if cell_list[cell.y - 1][cell.x] == '0':
             try:
-                cell_list[cell.y - 1][cell.x] = Cell(cell.y - 1, cell.x, cell.color, cell.genome, cell.kind)
-            except IndexError:
-                pass
-        elif cell_list[cell.y + 1][cell.x] == '0':
-            try:
-                cell_list[cell.y + 1][cell.x] = Cell(cell.y + 1, cell.x, cell.color, cell.genome, cell.kind)
+                cell_list[cell.y - 1][cell.x] = cell_n
             except IndexError:
                 pass
 
 
-def killer(cell, cell_list, location):
-    free_place = 0
+def killer(cell, cell_list, location, d_k):
+    taken_place = 8
     for raw in location:
-        free_place += raw.count('0') + raw.count('-')
-    if cell.energy <= 0 or free_place < settings.free_place_needing:
+        taken_place -= raw.count('0') + raw.count('-')
+    if cell.energy <= 0 or taken_place > settings.free_place_needing or (
+            "b10" not in cell.genome and "b20" not in cell.genome and "b30" not in cell.genome):
         cell_list[cell.y][cell.x] = '0'
-        return False
-    return True
 
 
-def get_activities(cell):
-    potention = random.randint(0, 100) + cell.genome['Желание_жить']
-
-    return potention
 
 def genome_action(genome):
     action = genome.pop(0)
     genome.append(action)
-    return action, genome
+    return action
 
 
-def mutation(cell):
-    if cell.genome_count < 50:
-        cell.genome['Желание_жить'] = round(cell.genome['Желание_жить'] + 0.1, 1)
-    else:
-        pass
+def mutation(genome, kind):
+    new_gen = random.choice(
+        ('b10', 'b20', 'b30', 'b40', 'b50', 'u', 'd', 'l', 'r', 'c', 'el', 'er'))
+    new_genome = genome.copy()
 
-def mutation_new(genome):
-    new_gen = random.choice(('up', 'down', 'left', 'right', 'birth', 'none', 'collect'))
-    genome.pop(random.randint(0, len(genome) - 1))
-    genome.append(new_gen)
-    return genome
+    new_genome.pop(random.randint(0, len(new_genome) - 1))
+    new_genome.append(new_gen)
+
+    '''Добавить добавление рождаемости при его отсутсвтии'''
+    kind_new = kind[:4] + chr(random.randint(65, 90)) + str(random.randint(0, 100))
+    return new_genome, kind_new
+
+def eat(cell, location, cell_list, action):
+    if action[-1] == 'l' and location[1][0] != '0':
+        if location[1][0].kind != cell.kind:
+            try:
+                cell.energy += cell_list[cell.y][cell.x - 1].energy
+                cell_list[cell.y][cell.x - 1] = '0'
+
+            except IndexError:
+                pass
+
+    if action[-1] == 'r' and location[1][2] != '0':
+        if location[1][2].kind != cell.kind:
+            try:
+                cell.energy += cell_list[cell.y][cell.x + 1].energy
+                cell_list[cell.y][cell.x + 1] = '0'
+
+            except IndexError:
+                pass

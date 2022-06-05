@@ -12,7 +12,7 @@ class Settings():
         self.screen_height = 500
         self.bg_color = (0, 0, 0)
         self.line_thin = 2
-        self.start_size = 2  # начальный размер квадратов
+        self.start_size = 5  # начальный размер квадратов
 
         '''Indexing'''
         self.y_size = int(self.screen_height / self.start_size) - 1
@@ -21,8 +21,10 @@ class Settings():
         '''Colors'''
 
         self.colors = ["light blue", "spring green", "golden rod",
-                       "lime", 'aqua', 'royal blue', "yellow", "red", "blue"]
+                       "lime", 'aqua', 'royal blue', "yellow", "red", "blue",
+                       'DarkSalmon', 'MediumSpringGreen', "MidnightBlue", "SlateBlue",
+                       'DarkOrange', 'DeepSkyBlue', 'Chocolate', 'Gray', 'LightSlateGray']
 
         '''Cell life settings'''
-        self.start_energy = random.randint(10, 30)  # потом поменять
-        self.free_place_needing = 7   # стандартно 5
+        self.start_energy = random.randint(10, 60)  # потом поменять вернуть 10,60
+        self.free_place_needing = 4   # максимально количество клеток рядом
