@@ -11,8 +11,8 @@ class Settings():
         self.screen_width = 500
         self.screen_height = 500
         self.bg_color = (0, 0, 0)
-        self.line_thin = 2
-        self.start_size = 5  # начальный размер квадратов
+        self.line_thin = 3
+        self.start_size = 10  # начальный размер квадратов
 
         '''Indexing'''
         self.y_size = int(self.screen_height / self.start_size) - 1
@@ -28,3 +28,4 @@ class Settings():
         '''Cell life settings'''
         self.start_energy = random.randint(10, 60)  # потом поменять вернуть 10,60
         self.free_place_needing = 4   # максимально количество клеток рядом
+        self.disabled_counter = 10

@@ -17,6 +17,7 @@ class Cell():
         self.freedom_love = 0
         self.genome = genome
         self.kind = kind
+        self.disabled_counter = self.settings.disabled_counter
 
 
         #self.color = random.choice(self.settings.colors)
