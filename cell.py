@@ -12,7 +12,7 @@ class Cell():
         self.x = x
         self.y = y
         self.line_thin = self.settings.line_thin
-        self.energy = self.settings.start_energy + int(birth_coeff)
+        self.energy = self.settings.start_energy + int(birth_coeff) - 10
         self.action_possibility = False
         self.freedom_love = 0
         self.genome = genome
