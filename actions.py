@@ -6,26 +6,27 @@ from cell import Cell
 settings = Settings()
 
 
-def life_cicle(cell, cell_list):
+def life_cycle(cell, cell_list):
     """Main circle of events in cells life"""
     location = nearby_objects(cell, cell_list)
     action = genome_action(cell.genome)
 
     if action in ('u', 'd', 'r', 'l'):
         square_moving(cell, cell_list, location, action)
-        cell.disabled_counter = settings.disabled_counter
+
     if 'b' in action and cell.energy > int(action[-2:]) * 4:
         birth(cell, cell_list, action)
-        cell.energy -= int(action[-2:]) * 4
+        cell.energy -= int(action[-2:]) * 5
 
     if action == 'c':
         collect(cell)
 
     if "e" in action:
         eat(cell, location, cell_list, action)
-        cell.energy -= 10
 
     energy_reduce(cell, location)
+
+    cell.life_time -= 1
     killer(cell, cell_list, location)
 
 
@@ -73,16 +74,18 @@ def square_moving(cell, cell_list, location, action):
 
     cell.object = pygame.Rect((cell.x * cell.width, cell.y * cell.height, cell.width, cell.height))
 
+
 def collect(cell):
     if settings.y_size - settings.I_y_start_more_energy > cell.y > settings.I_y_start_more_energy and \
             settings.x_size - settings.I_x_start_more_energy > cell.x > settings.I_x_start_more_energy:
         if settings.y_size - settings.I_y_start_anymore_energy > cell.y > settings.I_y_start_anymore_energy and \
                 settings.x_size - settings.I_x_start_anymore_energy > cell.x > settings.I_x_start_anymore_energy:
-            cell.energy += 7
+            cell.energy += 2
 
-        cell.energy += 3
+        cell.energy += 2
     else:
-        cell.energy += 1
+        cell.energy += 2
+
 
 def nearby_objects(cell, cell_list):
     top = ['-', '0', '-']
@@ -98,6 +101,7 @@ def nearby_objects(cell, cell_list):
     bottom[1] = try_to_see(cell_list, cell.y + 1, cell.x)
     # bottom[2] = try_to_see(cell_list, cell.y + 1, cell.x + 1)
     return [top, middle, bottom]
+
 
 def try_to_see(cell_list, original_y, original_x):
     try:
@@ -117,6 +121,7 @@ def try_to_see(cell_list, original_y, original_x):
 
         return cell_list[y][x]
 
+
 def birth(cell, cell_list, action):
     '''Надо помнить, что мутирует ячейка только вврех, ввиду того что при мутации координата указана как у - 1'''
     if settings.y_size > cell.y > 0:
@@ -127,36 +132,43 @@ def birth(cell, cell_list, action):
 
         if random.randint(1, 20) == 20:
             genome, kind = mutation(cell.genome, cell.kind)
-            cell_n = Cell(y - 1, cell.x, random.choice(settings.colors), genome, kind, action[-2:])
+            cell_n = Cell(y - 1, cell.x, color(genome), genome, kind, action[-2:])  # random.choice(settings.colors)
 
-        if cell_list[y - 1][cell.x] == '0':
             try:
-                cell_list[y - 1][cell.x] = cell_n
+                if cell_list[y - 1][cell.x] == '0':
+                    cell_list[y - 1][cell.x] = cell_n
             except IndexError:
-                pass
+                if cell_list[settings.y_size][cell.x] == '0':
+                    cell_list[settings.y_size][cell.x] = cell_n
 
-        elif cell_list[cell.y + 1][cell.x] == '0':
+
+        else:
             try:
-
-                cell_list[cell.y + 1][cell.x] = Cell(y + 1, cell.x, cell.color, new_genome, cell.kind, action[-2:])
+                if cell_list[y - 1][cell.x] == '0':
+                    cell_list[y - 1][cell.x] = cell_n
             except IndexError:
-                pass
+                if cell_list[settings.y_size][cell.x] == '0':
+                    cell_list[settings.y_size][cell.x] = cell_n
+
 
 def energy_reduce(cell, location):
-    energy_reduce = 0
+    energy_reduce = 0  # 0 default
     for raw in location:
         energy_reduce += raw.count('-') + raw.count('0')
-    cell.energy -= 1 + (8 - energy_reduce) + round(cell.energy * 0.01)
+    cell.energy -= 1 + (7 - energy_reduce) + round(cell.energy * 0.01)
+
 
 def killer(cell, cell_list, location):
-    if cell.energy <= 0:
+    if cell.energy <= 0 or cell.life_time <= 0:
         # or ("b10" not in cell.genome and "b20" not in cell.genome and "b30" not in cell.genome):
         cell_list[cell.y][cell.x] = '0'
+
 
 def genome_action(genome):
     action = genome.pop(0)
     genome.append(action)
     return action
+
 
 def mutation(genome, kind):
     new_gen = random.choice(
@@ -170,11 +182,12 @@ def mutation(genome, kind):
     kind_new = kind[:4] + chr(random.randint(65, 90)) + str(random.randint(0, 100))
     return new_genome, kind_new
 
+
 def eat(cell, location, cell_list, action):
     if action[-1] == 'l' and location[1][0] != '0':
         if location[1][0].kind != cell.kind:
             try:
-                cell.energy += cell_list[cell.y][cell.x - 1].energy * 2
+                cell.energy += cell_list[cell.y][cell.x - 1].energy * settings.eat_coef
                 cell_list[cell.y][cell.x - 1] = '0'
 
             except IndexError:
@@ -183,7 +196,7 @@ def eat(cell, location, cell_list, action):
     if action[-1] == 'r' and location[1][1] != '0':
         if location[1][1].kind != cell.kind:
             try:
-                cell.energy += cell_list[cell.y][cell.x + 1].energy * 2
+                cell.energy += cell_list[cell.y][cell.x + 1].energy * settings.eat_coef
                 cell_list[cell.y][cell.x + 1] = '0'
 
             except IndexError:
@@ -192,7 +205,7 @@ def eat(cell, location, cell_list, action):
     if action[-1] == 'u' and location[0][1] != '0':
         if location[0][1].kind != cell.kind:
             try:
-                cell.energy += cell_list[cell.y - 1][cell.x].energy * 2
+                cell.energy += cell_list[cell.y - 1][cell.x].energy * settings.eat_coef
                 cell_list[cell.y - 1][cell.x] = '0'
 
             except IndexError:
@@ -201,8 +214,24 @@ def eat(cell, location, cell_list, action):
     if action[-1] == 'd' and location[2][1] != '0':
         if location[2][1].kind != cell.kind:
             try:
-                cell.energy += cell_list[cell.y + 1][cell.x].energy * 2
+                cell.energy += cell_list[cell.y + 1][cell.x].energy * settings.eat_coef
                 cell_list[cell.y + 1][cell.x] = '0'
 
             except IndexError:
                 pass
+
+
+def color(genome):
+    collect = (255 // settings.len_genome) * genome.count('c')
+    eat = (255 // settings.len_genome) * (genome.count('er') + genome.count('el') + genome.count('ed')
+                                          + genome.count('eu'))
+    birth = (255 // settings.len_genome) * (genome.count('b10') + genome.count('b20') + genome.count('b30')
+                                            + genome.count('b40') + genome.count('b50'))
+    if eat > 255:
+        eat = 255
+    if collect > 255:
+        collect = 255
+    if birth > 255:
+        birth = 255
+
+    return [0 + eat, 0 + collect, 0 + birth]

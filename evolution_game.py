@@ -67,7 +67,7 @@ class Evolution_game:
                                 self.kinds_uniq[self.objects[i][j].kind] = 1
                             else:
                                 self.kinds_uniq[self.objects[i][j].kind] += 1
-                            actions.life_cicle(self.objects[i][j], self.objects)
+                            actions.life_cycle(self.objects[i][j], self.objects)
 
             """Отрисовка нового масива"""
             for i in range(len((self.objects))):
@@ -101,7 +101,7 @@ class Evolution_game:
                     # for raw in self.objects:
                     #     print(raw)
                     try:
-                        print(self.objects[y][x].y, self.objects[y][x].x, self.objects[y][x].kind, self.objects[y][x].color, sorted(self.objects[y][x].genome),self.objects[y][x].energy)
+                        print(self.objects[y][x].y, self.objects[y][x].x, self.objects[y][x].kind, self.objects[y][x].color, sorted(self.objects[y][x].genome),self.objects[y][x].energy, self.objects[y][x].life_time)
                     except AttributeError:
                         pass
 
@@ -145,16 +145,19 @@ class Evolution_game:
         b = random.randint(0, len(self.objects[0]) - 1)
         if self.objects[a][b] == '0':
             try:
-                self.objects[a][b] = Cell(a, b, random.choice(self.settings.colors), self.genome(), chr(random.randint(65, 91)))
+                # self.objects[a][b] = Cell(a, b, random.choice(self.settings.colors), self.genome(), chr(random.randint(65, 91)))
+                genome = self.genome()
+                self.objects[a][b] = Cell(a, b, actions.color(genome), genome,
+                                          chr(random.randint(65, 91)))
             except IndexError:
                 pass
 
     def genome(self):
         a = []
         a.append('b10')
-        a.append("c")
-        while len(a) < 15:
-            a.append(random.choice(('c', 'er', 'el', 'r', 'l')))
+
+        while len(a) < 25:
+            a.append(random.choice(('r', 'l', 'b_10',  'c')))
 
 
         # while len(a) < 20:
