@@ -54,9 +54,9 @@ class Evolution_game:
 
             #pygame.draw.rect(self.screen,[255,255,255], pygame.Rect((1 * self.settings.start_size, 2 * self.settings.start_size, 20, 20)), 5 )
 
-            if self.round_counter % 1 == 0:
-                self.birth()
-                self.birth()
+            # if self.round_counter % 1 == 0:
+            #     self.birth()
+            #     self.birth()
 
             '''Проход основного цикла жизни с переработкой массива  координат клеток'''
             for i in range(len((self.objects))):
@@ -67,7 +67,7 @@ class Evolution_game:
                                 self.kinds_uniq[self.objects[i][j].kind] = 1
                             else:
                                 self.kinds_uniq[self.objects[i][j].kind] += 1
-                            actions.life_cycle(self.objects[i][j], self.objects)
+                            actions.life_cycle(self.objects[i][j], self.objects, self.settings)
 
             """Отрисовка нового масива"""
             for i in range(len((self.objects))):
@@ -130,9 +130,14 @@ class Evolution_game:
                             print(k, v[1], sorted(v[0]))
 
                         print('--------------------------------')
-                    # if event.type == pygame.KEYDOWN and event.key == pygame.K_w:
-                    #     self.settings.energy_coef += 0.1
-                    #     print(self.settings.energy_coef)
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_b:
+                        self.birth()
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_w:
+                        self.settings.energy_coef += 0.1
+                        print(self.settings.energy_coef)
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+                        self.settings.energy_coef -= 0.1
+                        print(self.settings.energy_coef)
 
             pygame.display.flip()
             time.sleep(0.01)
@@ -147,7 +152,7 @@ class Evolution_game:
             try:
                 # self.objects[a][b] = Cell(a, b, random.choice(self.settings.colors), self.genome(), chr(random.randint(65, 91)))
                 genome = self.genome()
-                self.objects[a][b] = Cell(a, b, actions.color(genome), genome,
+                self.objects[a][b] = Cell(a, b, actions.color(genome, self.settings), genome,
                                           chr(random.randint(65, 91)))
             except IndexError:
                 pass

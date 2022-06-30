@@ -1,28 +1,32 @@
 import random
 import pygame
+
+from My_projects.GAMES.EVOLUTION.actions import settings
 from settings import Settings
 from cell import Cell
 
-settings = Settings()
+# settings = Settings()
 
 
-def life_cycle(cell, cell_list):
+def life_cycle(cell, cell_list, settings):
     """Main circle of events in cells life"""
+    settings = settings
     location = nearby_objects(cell, cell_list)
     action = genome_action(cell.genome)
 
     if action in ('u', 'd', 'r', 'l'):
-        square_moving(cell, cell_list, location, action)
+        square_moving(cell, cell_list, location, action, settings)
 
-    if 'b' in action and cell.energy > int(action[-2:]) * 4:
-        birth(cell, cell_list, action)
+    if 'b' in action and cell.energy > int(action[-2:]) * 5:
+        birth(cell, cell_list, action, settings)
         cell.energy -= int(action[-2:]) * 5
 
     if action == 'c':
-        collect(cell)
+        collect(cell, settings)
 
     if "e" in action:
-        eat(cell, location, cell_list, action)
+        eat(cell, location, cell_list, action, settings)
+        cell.energy -= (cell.genome.count('er') + cell.genome.count('el') + cell.genome.count('ed') + cell.genome.count('eu')) * 3
 
     energy_reduce(cell, location)
 
@@ -30,7 +34,7 @@ def life_cycle(cell, cell_list):
     killer(cell, cell_list, location)
 
 
-def square_moving(cell, cell_list, location, action):
+def square_moving(cell, cell_list, location, action, settings):
     if action == 'u' and location[0][1] == '0':
         # print(cell.y, cell.x, action, location[0][1])
         if cell.y > 0:
@@ -75,16 +79,16 @@ def square_moving(cell, cell_list, location, action):
     cell.object = pygame.Rect((cell.x * cell.width, cell.y * cell.height, cell.width, cell.height))
 
 
-def collect(cell):
+def collect(cell, settings):
     if settings.y_size - settings.I_y_start_more_energy > cell.y > settings.I_y_start_more_energy and \
             settings.x_size - settings.I_x_start_more_energy > cell.x > settings.I_x_start_more_energy:
         if settings.y_size - settings.I_y_start_anymore_energy > cell.y > settings.I_y_start_anymore_energy and \
                 settings.x_size - settings.I_x_start_anymore_energy > cell.x > settings.I_x_start_anymore_energy:
-            cell.energy += 2
+            cell.energy += 2 * settings.energy_coef
 
-        cell.energy += 2
+        cell.energy += 2 * settings.energy_coef
     else:
-        cell.energy += 2
+        cell.energy += 2 * settings.energy_coef
 
 
 def nearby_objects(cell, cell_list):
@@ -93,17 +97,17 @@ def nearby_objects(cell, cell_list):
     bottom = ['-', '0', '-']
 
     # top[0] = try_to_see(cell_list, cell.y - 1, cell.x - 1)
-    top[1] = try_to_see(cell_list, cell.y - 1, cell.x)
+    top[1] = try_to_see(cell_list, cell.y - 1, cell.x, settings)
     # top[2] = try_to_see(cell_list, cell.y - 1, cell.x + 1)
-    middle[0] = try_to_see(cell_list, cell.y, cell.x - 1)
-    middle[1] = try_to_see(cell_list, cell.y, cell.x + 1)
+    middle[0] = try_to_see(cell_list, cell.y, cell.x - 1, settings)
+    middle[1] = try_to_see(cell_list, cell.y, cell.x + 1, settings)
     # bottom[0] = try_to_see(cell_list, cell.y + 1, cell.x - 1)
-    bottom[1] = try_to_see(cell_list, cell.y + 1, cell.x)
+    bottom[1] = try_to_see(cell_list, cell.y + 1, cell.x, settings)
     # bottom[2] = try_to_see(cell_list, cell.y + 1, cell.x + 1)
     return [top, middle, bottom]
 
 
-def try_to_see(cell_list, original_y, original_x):
+def try_to_see(cell_list, original_y, original_x, settings):
     try:
         a = cell_list[original_y][original_x]
         return a
@@ -122,7 +126,7 @@ def try_to_see(cell_list, original_y, original_x):
         return cell_list[y][x]
 
 
-def birth(cell, cell_list, action):
+def birth(cell, cell_list, action, settings):
     '''Надо помнить, что мутирует ячейка только вврех, ввиду того что при мутации координата указана как у - 1'''
     if settings.y_size > cell.y > 0:
         new_genome = cell.genome.copy()
@@ -132,7 +136,7 @@ def birth(cell, cell_list, action):
 
         if random.randint(1, 20) == 20:
             genome, kind = mutation(cell.genome, cell.kind)
-            cell_n = Cell(y - 1, cell.x, color(genome), genome, kind, action[-2:])  # random.choice(settings.colors)
+            cell_n = Cell(y - 1, cell.x, color(genome, settings), genome, kind, action[-2:])  # random.choice(settings.colors)
 
             try:
                 if cell_list[y - 1][cell.x] == '0':
@@ -140,7 +144,6 @@ def birth(cell, cell_list, action):
             except IndexError:
                 if cell_list[settings.y_size][cell.x] == '0':
                     cell_list[settings.y_size][cell.x] = cell_n
-
 
         else:
             try:
@@ -183,7 +186,7 @@ def mutation(genome, kind):
     return new_genome, kind_new
 
 
-def eat(cell, location, cell_list, action):
+def eat(cell, location, cell_list, action, settings):
     if action[-1] == 'l' and location[1][0] != '0':
         if location[1][0].kind != cell.kind:
             try:
@@ -221,7 +224,7 @@ def eat(cell, location, cell_list, action):
                 pass
 
 
-def color(genome):
+def color(genome, settings):
     collect = (255 // settings.len_genome) * genome.count('c')
     eat = (255 // settings.len_genome) * (genome.count('er') + genome.count('el') + genome.count('ed')
                                           + genome.count('eu'))

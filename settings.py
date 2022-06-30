@@ -6,9 +6,9 @@ class Settings():
     def __init__(self):
         '''Cell settings'''
 
-        self.cells_start_count = 10
+        self.cells_start_count = 1
         self.food_start_count = 0
-        self.eat_coef = 1
+        self.eat_coef = 2
 
 
         self.screen_width = 750
