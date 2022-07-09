@@ -17,9 +17,11 @@ def life_cycle(cell, cell_list, settings):
     if action in ('u', 'd', 'r', 'l'):
         square_moving(cell, cell_list, location, action, settings)
 
-    if 'b' in action and cell.energy > int(action[-2:]) * 5:
+    if 'b' in action and cell.energy > settings.start_energy:
         birth(cell, cell_list, action, settings)
-        cell.energy -= int(action[-2:]) * 5
+        # cell.energy -= int(action[-2:]) * 5
+        cell.energy -= cell.energy * 0.5
+
 
     if action == 'c':
         collect(cell, settings)
@@ -84,11 +86,11 @@ def collect(cell, settings):
             settings.x_size - settings.I_x_start_more_energy > cell.x > settings.I_x_start_more_energy:
         if settings.y_size - settings.I_y_start_anymore_energy > cell.y > settings.I_y_start_anymore_energy and \
                 settings.x_size - settings.I_x_start_anymore_energy > cell.x > settings.I_x_start_anymore_energy:
-            cell.energy += 2 * settings.energy_coef
+            cell.energy += 0.25 * settings.energy_coef
 
-        cell.energy += 2 * settings.energy_coef
+        cell.energy += 0.75 * settings.energy_coef
     else:
-        cell.energy += 2 * settings.energy_coef
+        cell.energy += 0.5 * settings.energy_coef
 
 
 def nearby_objects(cell, cell_list):
@@ -128,15 +130,16 @@ def try_to_see(cell_list, original_y, original_x, settings):
 
 def birth(cell, cell_list, action, settings):
     '''Надо помнить, что мутирует ячейка только вврех, ввиду того что при мутации координата указана как у - 1'''
+
     if settings.y_size > cell.y > 0:
         new_genome = cell.genome.copy()
         random.shuffle(new_genome)
         y = cell.y
-        cell_n = Cell(y - 1, cell.x, cell.color, new_genome, cell.kind, action[-2:])
+        cell_n = Cell(y - 1, cell.x, cell.color, new_genome, cell.kind, cell.energy * 0.5)
 
         if random.randint(1, 20) == 20:
             genome, kind = mutation(cell.genome, cell.kind)
-            cell_n = Cell(y - 1, cell.x, color(genome, settings), genome, kind, action[-2:])  # random.choice(settings.colors)
+            cell_n = Cell(y - 1, cell.x, color(genome, settings), genome, kind, cell.energy * 0.5)  # random.choice(settings.colors)
 
             try:
                 if cell_list[y - 1][cell.x] == '0':
@@ -144,7 +147,6 @@ def birth(cell, cell_list, action, settings):
             except IndexError:
                 if cell_list[settings.y_size][cell.x] == '0':
                     cell_list[settings.y_size][cell.x] = cell_n
-
         else:
             try:
                 if cell_list[y - 1][cell.x] == '0':
@@ -155,10 +157,11 @@ def birth(cell, cell_list, action, settings):
 
 
 def energy_reduce(cell, location):
-    energy_reduce = 0  # 0 default
-    for raw in location:
-        energy_reduce += raw.count('-') + raw.count('0')
-    cell.energy -= 1 + (7 - energy_reduce) + round(cell.energy * 0.01)
+    # energy_reduce = 0  # 0 default
+    # for raw in location:
+    #     energy_reduce += raw.count('-') + raw.count('0')
+    # cell.energy -= 1 + (8 - energy_reduce) + round(cell.energy * 0.01)
+    cell.energy -= 1 + round(cell.energy * 0.01)
 
 
 def killer(cell, cell_list, location):
@@ -225,11 +228,16 @@ def eat(cell, location, cell_list, action, settings):
 
 
 def color(genome, settings):
-    collect = (255 // settings.len_genome) * genome.count('c')
-    eat = (255 // settings.len_genome) * (genome.count('er') + genome.count('el') + genome.count('ed')
+    colozing_count = genome.count('c') + genome.count('er') + genome.count('el') + genome.count('ed') +\
+                     genome.count('eu') + genome.count('b10') + genome.count('b20') + genome.count('b30') + \
+                     genome.count('b40') + genome.count('b50')
+    if colozing_count == 0:
+        colozing_count = 1
+    collect = (255 // colozing_count) * genome.count('c')
+    eat = (255 // colozing_count) * (genome.count('er') + genome.count('el') + genome.count('ed')
                                           + genome.count('eu'))
-    birth = (255 // settings.len_genome) * (genome.count('b10') + genome.count('b20') + genome.count('b30')
-                                            + genome.count('b40') + genome.count('b50'))
+    birth = (255 // colozing_count) * (genome.count('b10') + genome.count('b20') + genome.count('b30') +
+                                       genome.count('b40') + genome.count('b50'))
     if eat > 255:
         eat = 255
     if collect > 255:

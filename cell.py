@@ -4,7 +4,7 @@ from settings import Settings
 
 class Cell():
 
-    def __init__(self, y, x, color, genome, kind, birth_coeff = 0):
+    def __init__(self, y, x, color, genome, kind, birth_coeff = 1):
         self.type = 'cell'
         self.settings = Settings()
         self.width = self.settings.start_size
@@ -12,7 +12,7 @@ class Cell():
         self.x = x
         self.y = y
         self.line_thin = self.settings.line_thin
-        self.energy = self.settings.start_energy + int(birth_coeff) - 10
+        self.energy = birth_coeff
         self.action_possibility = False
         self.freedom_love = 0
         self.genome = genome
