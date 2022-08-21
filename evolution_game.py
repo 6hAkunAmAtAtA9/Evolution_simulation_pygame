@@ -4,10 +4,10 @@ import time
 import random
 from settings import Settings
 from cell import Cell
-from environemt import Enviroment, Food
 import actions
 from button import Button
-#Most important change
+from info import info
+
 
 class Evolution_game:
 
@@ -25,27 +25,20 @@ class Evolution_game:
         for _ in range(self.settings.cells_start_count):
             self.birth()
 
-        for i in range(self.settings.food_start_count):
-            food = Food()
-            if self.objects[food.y][food.x] == '0':
-                self.objects[food.y][food.x] = food
-
-
         self.round_counter = 0
         self.death_count = 0
         self.mutation_count = 0
         self.birth_count = 0
         self.cell_count = 0
 
-        self.energy_increase_button = Button(self, 'energy_increase', self.settings.screen_width, 10)
-        self.energy_reduce_button = Button(self, 'energy_degrease', self.settings.screen_width, 50)
+        self.energy_increase_button = Button(self, 'energy_increase', self.settings.screen_width, 100)
+        self.energy_reduce_button = Button(self, 'energy_degrease', self.settings.screen_width, 140)
+        self.eat_increase_button = Button(self, 'eat_increase', self.settings.screen_width, 180)
+        self.eat_reduce_button = Button(self, 'eat_degrease', self.settings.screen_width, 220)
 
     def run_game(self):
         while True:
-
-            # for raw in self.objects:
-            #     print(raw)
-
+            self.birth()
             self.cell_count = 0
             self.kinds_uniq = {}
             self.screen.fill(self.settings.bg_color)
@@ -58,9 +51,6 @@ class Evolution_game:
 
 
             #pygame.draw.rect(self.screen,[255,255,255], pygame.Rect((1 * self.settings.start_size, 2 * self.settings.start_size, 20, 20)), 5 )
-
-            if self.round_counter % 1000 == 0:
-                self.birth()
 
 
             '''Проход основного цикла жизни с переработкой массива  координат клеток'''
@@ -95,10 +85,17 @@ class Evolution_game:
             self.event_processing()
             self.energy_increase_button.draw_buttom()
             self.energy_reduce_button.draw_buttom()
+            self.eat_increase_button.draw_buttom()
+            self.eat_reduce_button.draw_buttom()
+
+            info('Energy coeff: ', self.settings.energy_coef, 10, self.settings.screen_width)
+            info('Eat coeff: ', self.settings.eat_coef, 30, self.settings.screen_width)
 
             pygame.display.flip()
+
             time.sleep(0.1)
             # self.window.mainloop()
+
 
     def birth(self):
         a = random.randint(0, len(self.objects) - 1)
@@ -118,14 +115,6 @@ class Evolution_game:
         while len(a) < self.settings.len_genome:
             a.append(random.choice(('r', 'l', 'b_10',  'c')))
 
-        # while len(a) < 20:
-        #     a.append('-')
-
-        # while len(a) < 10:
-        #     a.append(random.choice(("u", 'd', 'r', 'l', 'b_10', 'el', 'el', 'eu', 'ed', 'c')))
-        #
-        # while len(a) < 25:
-        #     a.append(random.choice(("u", 'd', 'r', 'l', 'b_10', 'el', 'el', 'eu', 'ed', 'c')))
 
         random.shuffle(a)
         return a
@@ -141,17 +130,15 @@ class Evolution_game:
                 y = pos[1] // self.settings.start_size
                 x = pos[0] // self.settings.start_size
                 if self.energy_increase_button.rect.collidepoint(pos):
-                    self.settings.energy_coef += 0.5
-                    print(self.settings.energy_coef)
-                elif self.energy_reduce_button.rect.collidepoint(pos):
-                    self.settings.energy_coef -= 0.5
-                    print(self.settings.energy_coef)
+                    self.settings.energy_coef += 1
+                if self.energy_reduce_button.rect.collidepoint(pos):
+                    self.settings.energy_coef -= 1
+                if self.eat_increase_button.rect.collidepoint(pos):
+                    self.settings.eat_coef += 1
+                if self.eat_reduce_button.rect.collidepoint(pos):
+                    self.settings.eat_coef -= 1
 
-
-                print(pos[1] // self.settings.start_size, pos[0] // self.settings.start_size)
-                # print(self.objects[y][x])
-                # for raw in self.objects:
-                #     print(raw)
+                # print(pos[1] // self.settings.start_size, pos[0] // self.settings.start_size) отрисовка координат точки куда нажата мышь
                 try:
                     print(self.objects[y][x].y, self.objects[y][x].x, self.objects[y][x].kind, self.objects[y][x].color,
                           sorted(self.objects[y][x].genome), self.objects[y][x].energy, self.objects[y][x].life_time)
@@ -192,7 +179,7 @@ class Evolution_game:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                     self.settings.energy_coef -= 0.5
                     print(self.settings.energy_coef)
-        pass
+
 
 if __name__ == "__main__":
     eg = Evolution_game()

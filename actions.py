@@ -1,7 +1,7 @@
 import random
 import pygame
 
-from My_projects.GAMES.EVOLUTION.actions import settings
+
 from settings import Settings
 from cell import Cell
 
@@ -10,8 +10,8 @@ from cell import Cell
 
 def life_cycle(cell, cell_list, settings):
     """Main circle of events in cells life"""
-    settings = settings
-    location = nearby_objects(cell, cell_list)
+
+    location = nearby_objects(cell, cell_list, settings)
     action = genome_action(cell.genome)
 
     if action in ('u', 'd', 'r', 'l'):
@@ -93,7 +93,7 @@ def collect(cell, settings):
         cell.energy += 0.5 * settings.energy_coef
 
 
-def nearby_objects(cell, cell_list):
+def nearby_objects(cell, cell_list, settings):
     top = ['-', '0', '-']
     middle = ['0', '0']
     bottom = ['-', '0', '-']

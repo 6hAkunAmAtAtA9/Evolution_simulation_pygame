@@ -7,9 +7,9 @@ class Settings():
         '''Cell settings'''
 
         self.cells_start_count = 1
-        self.food_start_count = 0
 
         self.energy_coef = 15
+        self.eat_coef = 1
 
 
         self.screen_width = 1000
@@ -53,11 +53,10 @@ class Settings():
                        'DarkOrange', 'DeepSkyBlue', 'Chocolate', 'Gray', 'LightSlateGray']
 
         '''Cell life settings'''
-        self.eat_coef = 1
+
         self.len_genome = 10
         self.start_energy = random.randint(50, 100)  # потом поменять вернуть 10,60
         self.life_time = 100
         self.free_place_needing = 4  # максимально количество клеток рядом
         self.disabled_counter = 10
 
-        # self.genime_case =
